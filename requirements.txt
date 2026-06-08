@@ -1,4 +1,1 @@
-selenium
 requests
-webdriver-manager
-chromedriver-autoinstall
