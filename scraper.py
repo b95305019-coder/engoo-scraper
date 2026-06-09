@@ -3,7 +3,7 @@ import requests
 
 # ── 設定 ──────────────────────────────────────────
 MAKE_WEBHOOK_URL = "https://hook.us2.make.com/astkw64ndn7wemprvbg9tjri3vwu8t7g"
-PAGE_SIZE = 4  # 每天抓幾篇
+PAGE_SIZE = 2  # 每天抓幾篇
 ENGOO_LIST_API = (
     "https://api.engoo.com/api/lesson_headers"
     "?category=0225ae09-5d63-41c2-bd75-693985d07d78"
