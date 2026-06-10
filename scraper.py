@@ -43,10 +43,14 @@ def get_engoo_articles():
     for item in data.get("data", []):
         title = item.get("title_text", {}).get("text", "")
         intro = item.get("introduction_text", {}).get("text", "")
+        master_id = item.get("master_id", "")
+        # Engoo 文章 URL（用 master_id 組成）
+        url = f"https://engoo.com/app/daily-news/article/{master_id}" if master_id else "https://engoo.com/app/daily-news"
         articles.append({
             "source": "Engoo",
             "title": title,
             "content": f"Title: {title}\n\nIntroduction: {intro}",
+            "url": url,
         })
         print(f"  ✓ {title}")
     return articles
@@ -78,11 +82,13 @@ def get_news_articles():
                 title = item.findtext("title", "").strip()
                 description = item.findtext("description", "").strip()
                 description = re.sub(r"<[^>]+>", "", description).strip()
+                url = item.findtext("link", "").strip()
                 if title:
                     articles.append({
                         "source": source_name,
                         "title": title,
                         "content": f"Title: {title}\n\nSummary: {description}",
+                        "url": url,
                     })
                     print(f"  ✓ {title[:60]}...")
             if articles:
@@ -100,6 +106,7 @@ def send_to_make(article):
         "source": article["source"],
         "title": article["title"],
         "content": article["content"],
+        "url": article.get("url", ""),
     }
     resp = requests.post(MAKE_WEBHOOK_URL, json=payload, timeout=30)
     print(f"    → Make: {resp.status_code}")
@@ -111,13 +118,11 @@ def main():
 
     all_articles = []
 
-    # 抓 Engoo 文章
     try:
         all_articles += get_engoo_articles()
     except Exception as e:
         print(f"  ⚠️ Engoo 抓取失敗：{e}")
 
-    # 抓國際新聞
     try:
         all_articles += get_news_articles()
     except Exception as e:
@@ -129,12 +134,13 @@ def main():
 
     for i, article in enumerate(all_articles, 1):
         print(f"\n  [{i}/{len(all_articles)}] [{article['source']}] {article['title'][:50]}...")
+        print(f"     URL: {article.get('url', '無')}")
         try:
             send_to_make(article)
         except Exception as e:
             print(f"    ❌ 傳送失敗：{e}")
         if i < len(all_articles):
-            time.sleep(75)  # 間隔 75 秒（Make Sleep 60秒 + 15秒緩衝）
+            time.sleep(75)
 
     print("\n=== 完成！===")
 
