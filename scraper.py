@@ -54,6 +54,9 @@ def get_reuters_articles():
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
     }
     resp = requests.get(REUTERS_RSS, headers=headers, timeout=15)
+    print(f"  → HTTP Status: {resp.status_code}")
+    print(f"  → Content-Type: {resp.headers.get('Content-Type', 'unknown')}")
+    print(f"  → Content length: {len(resp.content)} bytes")
     resp.raise_for_status()
 
     # 解析 RSS XML
@@ -108,7 +111,9 @@ def main():
     try:
         all_articles += get_reuters_articles()
     except Exception as e:
+        import traceback
         print(f"  ⚠️ Reuters 抓取失敗：{e}")
+        print(traceback.format_exc())
 
     print(f"\n📤 共 {len(all_articles)} 篇文章，開始傳送到 Make...")
 
@@ -119,7 +124,7 @@ def main():
         except Exception as e:
             print(f"    ❌ 傳送失敗：{e}")
         if i < len(all_articles):
-            time.sleep(35)  # 間隔 35 秒避免 Gemini rate limit
+            time.sleep(75)  # 間隔 75 秒（Make Sleep 60秒 + 15秒緩衝）
 
     print("\n=== 完成！===")
 
